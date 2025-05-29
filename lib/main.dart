@@ -1,40 +1,36 @@
-// main.dart
 import 'package:flutter/material.dart';
-import 'package:projeto_controle_financeiro/components/chart.dart';
-import 'package:projeto_controle_financeiro/components/transaction_form.dart';
-import 'package:projeto_controle_financeiro/components/transaction_list.dart';
+import 'components/transaction_form.dart';
+import 'components/transaction_list.dart';
+import 'components/chart.dart';
 import 'models/transaction.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() => runApp(ExpensesApp());
+void main() => runApp(const ExpensesApp());
 
 class ExpensesApp extends StatelessWidget {
+  
+  const ExpensesApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: MyHomePage(),
+      home: const MyHomePage(),
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.purple).copyWith(secondary: Colors.amber),
-        fontFamily: 'Quicksand',
-        textTheme: ThemeData.light().textTheme.copyWith(
-              titleLarge: TextStyle(
-                fontFamily: 'OpenSans',
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-        appBarTheme: AppBarTheme(
-          titleTextStyle: TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        primarySwatch: Colors.purple,
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.purple,
+          accentColor: Colors.amber,
         ),
+        fontFamily: 'Quicksand',
       ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -42,19 +38,23 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _transactions = [];
 
-  void _addTransaction(String title, double value) {
-    final newTx = Transaction(
+  List<Transaction> get _recentTransactions {
+    return _transactions.where((tr) {
+      return tr.date.isAfter(DateTime.now().subtract(const Duration(days: 7)));
+    }).toList();
+  }
+
+  void _addTransaction(String title, double value, DateTime date) {
+    final newTransaction = Transaction(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
       title: title,
       value: value,
-      date: DateTime.now(),
-      id: DateTime.now().toString(),
+      date: date,
     );
 
     setState(() {
-      _transactions.add(newTx);
+      _transactions.add(newTransaction);
     });
-
-    Navigator.of(context).pop();
   }
 
   void _openTransactionFormModal(BuildContext context) {
@@ -68,27 +68,31 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('Despesas Pessoais'),
+        title: const Text(
+          'Despesas Pessoais',
+          style: TextStyle(fontFamily: 'Quicksand'),
+        ),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: () => _openTransactionFormModal(context),
-          )
+          ),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Chart(_transactions),
+          children: <Widget>[
+            Chart(_recentTransactions),
             TransactionList(_transactions),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
         onPressed: () => _openTransactionFormModal(context),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
