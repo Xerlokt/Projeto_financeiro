@@ -1,4 +1,4 @@
-# projeto_finan
+# projec_finan
 
 A new Flutter project.
 
